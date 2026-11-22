@@ -1,7 +1,7 @@
 import type { InventoryItem, MealType, Quantity, Recipe, Staple } from './types';
 import { available, isStaple } from './inventory';
-import { scaleQty } from './units';
-import { nameMatches, tokenize } from './names';
+import { formatQty, scaleQty } from './units';
+import { displayName, nameMatches, tokenize } from './names';
 import { caloriesFor } from './calories';
 
 export interface IngredientCheck {
@@ -130,4 +130,21 @@ export function readiness(missingCount: number): { label: string; tone: 'ready' 
   if (missingCount === 0) return { label: 'Cook now', tone: 'ready' };
   if (missingCount <= 2) return { label: `${missingCount} item${missingCount > 1 ? 's' : ''} away`, tone: 'close' };
   return { label: `${missingCount} missing`, tone: 'far' };
+}
+
+/** Label for a missing ingredient chip: "Paneer 200 g", or "Curd / yogurt: 150 g more" when partly covered. */
+export function missingLabel(c: IngredientCheck): string {
+  const name = displayName(c.name);
+  if (c.staple) return name;
+  if (c.have > 0) return `${name}: ${formatQty(c.shortBy, c.need.unit)} more`;
+  return `${name} ${formatQty(c.need.qty, c.need.unit)}`;
+}
+
+/** The meal people are most likely deciding on right now. */
+export function mealForNow(d: Date = new Date()): MealType {
+  const h = d.getHours();
+  if (h < 11) return 'breakfast';
+  if (h < 15) return 'lunch';
+  if (h < 18) return 'snack';
+  return 'dinner';
 }

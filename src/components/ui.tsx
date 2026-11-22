@@ -20,8 +20,8 @@ export function Button({
         size === 'lg' && 'min-h-14 px-5 text-[17px]',
         size === 'md' && 'min-h-12 px-4 text-base',
         size === 'sm' && 'min-h-10 px-3 text-sm',
-        variant === 'primary' && 'bg-brand text-brand-ink shadow-sm',
-        variant === 'secondary' && 'bg-surface text-ink border border-line',
+        variant === 'primary' && 'bg-brand text-brand-ink shadow-sm hover:brightness-110',
+        variant === 'secondary' && 'bg-surface text-ink border border-line hover:border-ink-3',
         variant === 'ghost' && 'text-ink-2',
         variant === 'danger' && 'bg-bad-soft text-bad',
         className,
@@ -99,7 +99,7 @@ export function Chip({
       {...props}
       className={cx(
         'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition',
-        active ? 'border-brand bg-brand-soft text-ink' : 'border-line bg-surface text-ink-2',
+        active ? 'border-brand bg-brand text-brand-ink' : 'border-line bg-surface text-ink-2 hover:border-ink-3',
         className,
       )}
     >
@@ -135,9 +135,9 @@ export function Sheet({
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center" role="dialog" aria-modal="true">
-      <div className="animate-fade absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="animate-sheet relative flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl bg-bg shadow-2xl">
+    <div className="fixed inset-0 z-40 flex items-end justify-center lg:items-center lg:p-6" role="dialog" aria-modal="true">
+      <div className="animate-fade absolute inset-0 bg-black/35 backdrop-blur-[2px]" onClick={onClose} />
+      <div className="animate-sheet relative flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-[28px] bg-bg shadow-2xl lg:max-h-[85dvh] lg:max-w-xl lg:rounded-[28px]">
         <div className="flex items-center gap-2 px-5 pt-3 pb-2">
           <div className="min-w-0 flex-1 pt-2 text-lg font-bold leading-tight">{title}</div>
           <IconButton label="Close" onClick={onClose} className="-mr-2">
@@ -145,7 +145,7 @@ export function Sheet({
           </IconButton>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">{children}</div>
-        {footer && <div className="pb-safe border-t border-line bg-bg px-5 pt-3 pb-3">{footer}</div>}
+        {footer && <div className="pb-safe border-t border-line bg-bg px-5 pt-3 pb-3 lg:rounded-b-[28px]">{footer}</div>}
       </div>
     </div>
   );
@@ -153,8 +153,8 @@ export function Sheet({
 
 export function EmptyState({ emoji, title, body, children }: { emoji: string; title: string; body: string; children?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center rounded-3xl border border-dashed border-line bg-surface px-6 py-10 text-center">
-      <div className="mb-3 text-5xl" aria-hidden>
+    <div className="flex flex-col items-center rounded-[28px] border border-line bg-surface px-6 py-12 text-center">
+      <div className="emoji mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-tile-green text-5xl" aria-hidden>
         {emoji}
       </div>
       <h2 className="text-lg font-bold">{title}</h2>
@@ -164,12 +164,12 @@ export function EmptyState({ emoji, title, body, children }: { emoji: string; ti
   );
 }
 
-export function ScreenHeader({ title, subtitle, action }: { title: string; subtitle?: ReactNode; action?: ReactNode }) {
+export function ScreenHeader({ title, subtitle, action }: { title: ReactNode; subtitle?: ReactNode; action?: ReactNode }) {
   return (
-    <header className="flex items-start gap-3 px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
+    <header className="flex items-start gap-3 px-4 pt-[max(env(safe-area-inset-top),1.25rem)] pb-4 lg:px-0 lg:pt-10 lg:pb-6">
       <div className="min-w-0 flex-1">
-        <h1 className="text-[28px] font-extrabold tracking-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-ink-2">{subtitle}</p>}
+        <h1 className="text-[28px] leading-tight font-extrabold tracking-tight lg:text-[40px]">{title}</h1>
+        {subtitle && <p className="mt-1 text-[15px] text-ink-2 lg:text-lg">{subtitle}</p>}
       </div>
       {action}
     </header>
@@ -178,10 +178,29 @@ export function ScreenHeader({ title, subtitle, action }: { title: string; subti
 
 export function SectionTitle({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
-    <div className="mt-6 mb-2 flex items-center justify-between px-1">
-      <h2 className="text-sm font-bold tracking-wide text-ink-2 uppercase">{children}</h2>
+    <div className="mt-8 mb-3 flex items-center justify-between gap-3 px-1">
+      <h2 className="text-xl font-bold tracking-tight lg:text-2xl">{children}</h2>
       {right}
     </div>
+  );
+}
+
+/** Emoji on a soft tile: our stand-in for food photography (tiny, offline, consistent). */
+export function FoodTile({ emoji, size = 'md', className }: { emoji: string; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cx(
+        'emoji flex shrink-0 items-center justify-center bg-surface-2',
+        size === 'sm' && 'h-10 w-10 rounded-xl text-xl',
+        size === 'md' && 'h-14 w-14 rounded-2xl text-[28px]',
+        size === 'lg' && 'h-16 w-16 rounded-2xl text-4xl',
+        size === 'xl' && 'h-40 w-full rounded-3xl text-[88px]',
+        className,
+      )}
+    >
+      {emoji}
+    </span>
   );
 }
 
@@ -207,7 +226,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastCtx.Provider value={show}>
       {children}
       {toast && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-50 flex justify-center px-4">
+        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 lg:bottom-6 lg:left-64">
           <div
             key={toast.id}
             role="status"

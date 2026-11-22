@@ -1,6 +1,6 @@
 import type { InventoryItem, Quantity, Staple, Unit } from './types';
 import { convert, round } from './units';
-import { normalizeName } from './names';
+import { catalogEntry, normalizeName } from './names';
 
 export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 
@@ -78,4 +78,20 @@ export function isStaple(staples: Staple[], name: string): Staple | undefined {
 
 export function isLow(item: InventoryItem): boolean {
   return item.qty <= 0 || (item.lowAt !== undefined && item.qty < item.lowAt);
+}
+
+/**
+ * How full an item is, 0..1, for the stock bar. Measured against a "full" level of
+ * 2x its low-stock threshold, or one usual pack when it has no threshold.
+ */
+export function stockLevel(item: InventoryItem): number {
+  if (item.qty <= 0) return 0;
+  let full: number | null = null;
+  if (item.lowAt && item.lowAt > 0) full = item.lowAt * 2;
+  else {
+    const c = catalogEntry(item.name);
+    if (c?.pack) full = convert({ qty: c.pack, unit: c.unit }, item.unit, item.name);
+  }
+  if (!full || full <= 0) return 1;
+  return Math.max(0, Math.min(1, item.qty / full));
 }

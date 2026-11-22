@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyDeductions, planCook } from '../cooking';
-import { addToInventory, deductFromInventory } from '../inventory';
+import { addToInventory, deductFromInventory, stockLevel } from '../inventory';
 import type { InventoryItem, Recipe, Staple } from '../types';
 
 const onionRecipe: Recipe = {
@@ -81,5 +81,16 @@ describe('inventory merging', () => {
   it('clamps manual deductions at zero', () => {
     const a = inv([['egg', 2, 'pcs']]);
     expect(deductFromInventory(a, 'egg', { qty: 5, unit: 'pcs' })[0].qty).toBe(0);
+  });
+});
+
+describe('stock level', () => {
+  const item = (qty: number, unit: InventoryItem['unit'], name: string, lowAt?: number): InventoryItem => ({ id: 'x', name, qty, unit, lowAt, updatedAt: 0 });
+  it('is measured against 2x the threshold, or a usual pack', () => {
+    expect(stockLevel(item(2, 'pcs', 'egg', 4))).toBe(0.25);
+    expect(stockLevel(item(8, 'pcs', 'egg', 4))).toBe(1);
+    expect(stockLevel(item(500, 'ml', 'milk'))).toBe(0.5); // pack = 1 l
+    expect(stockLevel(item(0, 'g', 'rice'))).toBe(0);
+    expect(stockLevel(item(3, 'pcs', 'mystery'))).toBe(1);
   });
 });

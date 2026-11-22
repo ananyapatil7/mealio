@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchRecipe, parseQuery, rankRecipes, readiness } from '../ranking';
+import { matchRecipe, missingLabel, parseQuery, rankRecipes, readiness } from '../ranking';
 import type { InventoryItem, Recipe, Staple } from '../types';
 import { RECIPES } from '../../data/recipes';
 
@@ -72,5 +72,12 @@ describe('recipe ranking', () => {
     expect(readiness(1).label).toBe('1 item away');
     expect(readiness(2).label).toBe('2 items away');
     expect(readiness(4).tone).toBe('far');
+  });
+
+  it('formats missing-item labels cleanly (no stray symbols)', () => {
+    const r = recipe('r', 10, [['curd', 150, 'g'], ['paneer', 200, 'g'], ['oil', 5, 'ml']]);
+    const m = matchRecipe(r, inv([['curd', 150, 'g']]), staples, 4); // need 300 g curd, have 150
+    expect(m.missing.map(missingLabel)).toEqual(['Curd / yogurt: 150 g more', 'Paneer 400 g', 'Cooking oil']);
+    for (const label of m.missing.map(missingLabel)) expect(label).toMatch(/^[\w /:.½¼¾⅓⅔-]+$/);
   });
 });

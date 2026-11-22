@@ -178,3 +178,15 @@ export const RECIPES: Recipe[] = [
 ];
 
 export const RECIPES_BY_ID = new Map(RECIPES.map((rec) => [rec.id, rec]));
+
+const RECIPE_EMOJI: Record<string, string> = {
+  'masala-omelette': '🍳', poha: '🍛', upma: '🥣', 'besan-chilla': '🥞', 'overnight-oats': '🥣', 'scrambled-eggs-toast': '🍳',
+  'banana-pancakes': '🥞', 'aloo-paratha': '🫓', 'pb-banana-toast': '🍞', 'egg-bhurji': '🍳', 'yogurt-fruit-bowl': '🍓',
+  'veg-sandwich': '🥪', 'dal-tadka': '🍲', 'jeera-rice': '🍚', rajma: '🍛', 'chana-masala': '🍛', 'palak-paneer': '🥬',
+  'paneer-bhurji': '🧀', 'aloo-gobi': '🥔', 'egg-curry': '🍛', 'chicken-curry': '🍗', 'veg-pulao': '🍚', khichdi: '🍲',
+  'curd-rice': '🍚', 'lemon-rice': '🍋', 'jeera-aloo': '🥔', 'bhindi-masala': '🌿', 'masoor-dal': '🍲', 'fish-curry': '🐟',
+  'egg-fried-rice': '🍚', 'hakka-noodles': '🍜', 'aglio-olio': '🍝', 'tomato-pasta': '🍝', 'mushroom-pasta': '🍄',
+  'chicken-stir-fry': '🥘', shakshuka: '🍳', 'chickpea-salad': '🥗', 'tomato-soup': '🍅', 'grilled-cheese': '🥪',
+  'bean-quesadilla': '🌮', 'chicken-wrap': '🌯', 'masala-chai': '☕', 'corn-chaat': '🌽', 'banana-smoothie': '🥤', 'egg-chaat': '🥚',
+};
+export const recipeEmoji = (id: string) => RECIPE_EMOJI[id] ?? '🍽️';

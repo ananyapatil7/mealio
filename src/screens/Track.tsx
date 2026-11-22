@@ -26,7 +26,7 @@ export default function Track() {
     return (
       <div>
         <ScreenHeader title="Track" subtitle="Calories from meals you cook" />
-        <div className="px-4">
+        <div className="px-4 lg:max-w-3xl lg:px-0">
           <EmptyState emoji="📊" title="Nothing logged yet" body={'When you tap "I cooked this" on a recipe, the meal and its calories land here.'}>
             <Button onClick={() => go('cook')}>Find something to cook</Button>
           </EmptyState>
@@ -38,8 +38,8 @@ export default function Track() {
   return (
     <div>
       <ScreenHeader title="Track" subtitle="Calories from meals you cook" />
-      <div className="px-4">
-        <div className="rounded-3xl border border-line bg-surface p-5">
+      <div className="px-4 lg:max-w-3xl lg:px-0">
+        <div className="rounded-[28px] border border-line bg-surface p-5 lg:p-7">
           <p className="text-sm font-semibold text-ink-2">{isToday ? 'Today' : weekday(day.date, false)}</p>
           <p className="mt-1 text-5xl font-extrabold tracking-tight tabular-nums">
             {fmt(day.total)}
@@ -56,7 +56,7 @@ export default function Track() {
         {day.meals.length === 0 ? (
           <p className="px-1 text-ink-2">No meals logged {isToday ? 'yet today' : 'this day'}.</p>
         ) : (
-          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+          <ul className="divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
             {day.meals.map((m) => (
               <li key={m.id} className="flex min-h-14 items-center gap-3 pl-4">
                 <span className="min-w-0 flex-1">

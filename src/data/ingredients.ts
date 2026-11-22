@@ -107,3 +107,41 @@ export const CATALOG: CatalogEntry[] = [
 ];
 
 export const DEFAULT_STAPLES = CATALOG.filter((c) => c.staple).map((c) => c.key);
+
+export type Category = 'produce' | 'dairy' | 'grains' | 'protein' | 'pantry';
+export const CATEGORY_LABELS: Record<Category, string> = {
+  produce: 'Fruit & veg',
+  dairy: 'Dairy & eggs',
+  grains: 'Grains & pulses',
+  protein: 'Meat & fish',
+  pantry: 'Pantry',
+};
+
+/** Visual + grouping metadata, kept apart from the data the logic uses. */
+const META: Record<string, [emoji: string, category: Category]> = {
+  egg: ['🥚', 'dairy'], onion: ['🧅', 'produce'], tomato: ['🍅', 'produce'], potato: ['🥔', 'produce'],
+  'green chilli': ['🌶️', 'produce'], garlic: ['🧄', 'produce'], lemon: ['🍋', 'produce'], banana: ['🍌', 'produce'],
+  apple: ['🍎', 'produce'], carrot: ['🥕', 'produce'], capsicum: ['🫑', 'produce'], cucumber: ['🥒', 'produce'],
+  bread: ['🍞', 'grains'], tortilla: ['🫓', 'grains'], ginger: ['🌱', 'produce'], 'coriander leaves': ['🌿', 'produce'],
+  spinach: ['🥬', 'produce'], cauliflower: ['🥦', 'produce'], cabbage: ['🥬', 'produce'], peas: ['🌱', 'produce'],
+  okra: ['🌿', 'produce'], mushroom: ['🍄', 'produce'], 'sweet corn': ['🌽', 'produce'], rice: ['🍚', 'grains'],
+  'flattened rice': ['🍚', 'grains'], semolina: ['🌾', 'grains'], 'gram flour': ['🌾', 'grains'], 'wheat flour': ['🌾', 'grains'],
+  oats: ['🥣', 'grains'], pasta: ['🍝', 'grains'], noodles: ['🍜', 'grains'], 'toor dal': ['🫘', 'grains'],
+  'moong dal': ['🫘', 'grains'], 'masoor dal': ['🫘', 'grains'], 'kidney beans': ['🫘', 'grains'], chickpeas: ['🫘', 'grains'],
+  peanuts: ['🥜', 'pantry'], paneer: ['🧀', 'dairy'], tofu: ['🧊', 'protein'], chicken: ['🍗', 'protein'],
+  fish: ['🐟', 'protein'], cheese: ['🧀', 'dairy'], butter: ['🧈', 'dairy'], curd: ['🥣', 'dairy'],
+  'peanut butter': ['🥜', 'pantry'], 'tomato puree': ['🥫', 'pantry'], milk: ['🥛', 'dairy'], cream: ['🥛', 'dairy'],
+  'coconut milk': ['🥥', 'pantry'], honey: ['🍯', 'pantry'], salt: ['🧂', 'pantry'], oil: ['🫒', 'pantry'],
+  sugar: ['🍬', 'pantry'], ketchup: ['🥫', 'pantry'], chips: ['🍟', 'pantry'], biscuits: ['🍪', 'pantry'],
+  juice: ['🧃', 'pantry'], coffee: ['☕', 'pantry'], jam: ['🍓', 'pantry'], tea: ['🍵', 'pantry'],
+  'black pepper': ['🧂', 'pantry'], turmeric: ['🧂', 'pantry'], 'chilli powder': ['🌶️', 'pantry'], 'cumin seeds': ['🌾', 'pantry'],
+  'mustard seeds': ['🌾', 'pantry'], 'garam masala': ['🧂', 'pantry'], 'coriander powder': ['🧂', 'pantry'], ghee: ['🧈', 'pantry'],
+  'soy sauce': ['🍶', 'pantry'], 'chilli flakes': ['🌶️', 'pantry'], 'chaat masala': ['🧂', 'pantry'],
+};
+
+export function emojiFor(key: string): string {
+  return META[key]?.[0] ?? '🧺';
+}
+export function categoryFor(key: string): Category {
+  return META[key]?.[1] ?? 'pantry';
+}

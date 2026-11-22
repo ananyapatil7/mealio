@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, PackagePlus, Plus, X } from 'lucide-react';
-import { Button, EmptyState, ScreenHeader, SectionTitle, Stepper, cx, useToast } from '../components/ui';
+import { Button, EmptyState, FoodTile, ScreenHeader, SectionTitle, Stepper, cx, useToast } from '../components/ui';
+import { emojiFor } from '../data/ingredients';
 import { useStore } from '../state/store';
 import { parseGroceryText } from '../lib/parser';
 import { displayName } from '../lib/names';
@@ -37,16 +38,16 @@ export default function Shop() {
   return (
     <div>
       <ScreenHeader title="Shopping list" subtitle={shopping.length ? `${toBuy.length} to buy${inCart.length ? ` · ${inCart.length} in cart` : ''}` : 'Only what you actually need'} />
-      <div className="px-4">
+      <div className="px-4 lg:max-w-3xl lg:px-0">
         <form onSubmit={add} className="flex gap-2">
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Add: 2 l milk, bread…"
             aria-label="Add to shopping list"
-            className="min-h-12 min-w-0 flex-1 rounded-2xl border border-line bg-surface px-4 outline-none focus:border-brand"
+            className="min-h-12 min-w-0 flex-1 rounded-full border border-line bg-surface px-5 outline-none focus:border-brand"
           />
-          <Button type="submit" disabled={!text.trim()} aria-label="Add">
+          <Button type="submit" disabled={!text.trim()} aria-label="Add" className="rounded-full">
             <Plus size={20} />
           </Button>
         </form>
@@ -60,7 +61,7 @@ export default function Shop() {
         ) : (
           <>
             {toBuy.length > 0 && (
-              <ul className="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+              <ul className="mt-4 divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
                 {toBuy.map((r) => (
                   <Row key={r.key} row={r} />
                 ))}
@@ -70,7 +71,7 @@ export default function Shop() {
             {inCart.length > 0 && (
               <>
                 <SectionTitle>In your cart</SectionTitle>
-                <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+                <ul className="divide-y divide-line overflow-hidden rounded-3xl border border-line bg-surface">
                   {inCart.map((r) => (
                     <Row key={r.key} row={r} />
                   ))}
@@ -89,8 +90,8 @@ export default function Shop() {
       </div>
 
       {inCart.length > 0 && (
-        <div className="fixed inset-x-0 bottom-[calc(68px+env(safe-area-inset-bottom))] z-20 mx-auto max-w-lg px-4 pb-3">
-          <Button size="lg" className="w-full shadow-lg" onClick={buy}>
+        <div className="fixed inset-x-0 bottom-[calc(68px+env(safe-area-inset-bottom))] z-20 mx-auto max-w-lg px-4 pb-3 lg:right-auto lg:bottom-6 lg:left-[calc(16rem+2.5rem)] lg:mx-0 lg:w-[min(48rem,calc(100vw-21rem))] lg:max-w-none lg:px-0 lg:pb-0">
+          <Button size="lg" className="w-full rounded-full shadow-lg" onClick={buy}>
             <PackagePlus size={20} /> Add {inCart.length} ticked to kitchen
           </Button>
         </div>
@@ -120,6 +121,7 @@ function Row({ row }: { row: ShoppingRow }) {
         >
           {checked && <Check size={16} strokeWidth={3.5} />}
         </span>
+        <FoodTile emoji={emojiFor(row.name)} size="sm" className={checked ? 'opacity-50' : 'bg-tile-green'} />
         <span className="min-w-0 flex-1">
           <span className={cx('block font-semibold', checked && 'text-ink-3 line-through')}>
             {displayName(row.name)}
@@ -160,7 +162,7 @@ function Planned() {
             const recipe = RECIPES_BY_ID.get(p.recipeId);
             if (!recipe) return null;
             return (
-              <li key={p.id} className="flex items-center gap-2 rounded-2xl border border-line bg-surface py-1 pr-1 pl-4">
+              <li key={p.id} className="flex items-center gap-2 rounded-3xl border border-line bg-surface py-1.5 pr-1 pl-4">
                 <span className="min-w-0 flex-1 truncate font-medium">{recipe.name}</span>
                 <Stepper size="sm" label="servings" value={p.servings} onChange={(v) => dispatch({ type: 'setPlannedServings', id: p.id, servings: v })} />
                 <button

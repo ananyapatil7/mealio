@@ -1,6 +1,6 @@
 // Mealio service worker: offline app shell.
 // Navigations: network first, fall back to the cached shell. Assets: stale-while-revalidate.
-const CACHE = 'mealio-v1';
+const CACHE = 'mealio-v2';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/icon-192.png'];
 
 self.addEventListener('install', (event) => {

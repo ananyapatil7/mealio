@@ -32,3 +32,11 @@ describe('recipe dataset', () => {
     for (const i of sampleState().inventory) expect(normalizeName(i.name)).toBe(i.name);
   });
 });
+
+describe('visual metadata', () => {
+  it('every recipe ingredient and staple has its own icon', async () => {
+    const { emojiFor, CATALOG } = await import('../../data/ingredients');
+    for (const r of RECIPES) for (const ing of r.ingredients) expect(emojiFor(ing.name), ing.name).not.toBe('🧺');
+    for (const c of CATALOG) expect(emojiFor(c.key), c.key).not.toBe('🧺');
+  });
+});

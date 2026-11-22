@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Plus, ReceiptText, Sparkles, X } from 'lucide-react';
-import { Button, Sheet, cx, useToast } from '../components/ui';
+import { Button, FoodTile, Sheet, cx, useToast } from '../components/ui';
+import { emojiFor } from '../data/ingredients';
 import { parseGroceryText, type ParsedItem } from '../lib/parser';
 import { catalogEntry, displayName, isKnown, normalizeName } from '../lib/names';
 import { formatQty } from '../lib/units';
@@ -95,7 +96,7 @@ export default function AddGroceries({ open, onClose, mode = 'text' }: { open: b
             onChange={(e) => setText(e.target.value)}
             rows={6}
             placeholder={`e.g. "${EXAMPLE}"`}
-            className="w-full resize-none rounded-2xl border border-line bg-surface p-4 leading-relaxed outline-none focus:border-brand"
+            className="w-full resize-none rounded-3xl border border-line bg-surface p-4 leading-relaxed outline-none focus:border-brand"
           />
           <div className="mt-3 flex flex-wrap gap-2">
             <button className="min-h-10 rounded-full bg-surface-2 px-3.5 text-sm text-ink-2" onClick={() => setText(EXAMPLE)}>
@@ -123,8 +124,9 @@ export default function AddGroceries({ open, onClose, mode = 'text' }: { open: b
           )}
           <ul className="flex flex-col gap-2">
             {rows.map((r) => (
-              <li key={r.rowId} className="rounded-2xl border border-line bg-surface p-3">
+              <li key={r.rowId} className="rounded-3xl border border-line bg-surface p-3">
                 <div className="flex items-center gap-2">
+                  <FoodTile emoji={r.name ? emojiFor(r.name) : '🧺'} size="sm" className="bg-tile-green" />
                   <input
                     aria-label="Item name"
                     value={r.text}

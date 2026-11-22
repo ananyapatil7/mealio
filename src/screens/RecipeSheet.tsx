@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CalendarCheck, CalendarPlus, Check, ChefHat, Clock, Flame, Leaf, TriangleAlert, X } from 'lucide-react';
-import { Button, Sheet, Stepper, cx, useToast } from '../components/ui';
+import { Button, FoodTile, Sheet, Stepper, cx, useToast } from '../components/ui';
+import { emojiFor } from '../data/ingredients';
+import { recipeEmoji } from '../data/recipes';
 import { useStore } from '../state/store';
 import { matchRecipe } from '../lib/ranking';
 import { planCook, type DeductionLine } from '../lib/cooking';
@@ -72,6 +74,7 @@ function RecipeView({
         </div>
       }
     >
+      <FoodTile emoji={recipeEmoji(recipe.id)} size="xl" className="mb-4 h-32 bg-gradient-to-br from-lime to-brand-soft text-7xl" />
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-2">
         <span className="inline-flex items-center gap-1">
           <Clock size={15} /> {recipe.cookTimeMin} min
@@ -105,14 +108,17 @@ function RecipeView({
           {match.missingCount ? `${match.missingCount} missing` : 'You have everything'}
         </span>
       </h3>
-      <ul className="divide-y divide-line rounded-2xl border border-line bg-surface">
+      <ul className="divide-y divide-line rounded-3xl border border-line bg-surface">
         {match.checks.map((c) => (
           <li key={c.name} className="flex min-h-12 items-center gap-3 px-3 py-2">
-            <span
-              className={cx('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', c.ok ? 'bg-good-soft text-good' : 'bg-bad-soft text-bad')}
-              aria-label={c.ok ? 'Have' : 'Missing'}
-            >
-              {c.ok ? <Check size={16} strokeWidth={3} /> : <X size={16} strokeWidth={3} />}
+            <span className="relative">
+              <FoodTile emoji={emojiFor(c.name)} size="sm" />
+              <span
+                className={cx('absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-surface', c.ok ? 'bg-good text-surface' : 'bg-bad text-surface')}
+                aria-label={c.ok ? 'Have' : 'Missing'}
+              >
+                {c.ok ? <Check size={12} strokeWidth={3.5} /> : <X size={12} strokeWidth={3.5} />}
+              </span>
             </span>
             <span className="min-w-0 flex-1">
               <span className={cx('font-medium', !c.ok && 'text-bad')}>{displayName(c.name)}</span>
@@ -133,7 +139,7 @@ function RecipeView({
       <ol className="mb-2 flex flex-col gap-3">
         {recipe.steps.map((s, i) => (
           <li key={i} className="flex gap-3">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-bold">{i + 1}</span>
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-brand-ink">{i + 1}</span>
             <span className="pt-0.5 leading-relaxed">{s}</span>
           </li>
         ))}
