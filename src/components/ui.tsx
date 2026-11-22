@@ -250,3 +250,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     </ToastCtx.Provider>
   );
 }
+
+/** The Mealio mark: a bowl with two leaves. Same artwork as public/icon.svg (the app/tab icon). */
+export function Logo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 512 512" className={className} role="img" aria-label="Mealio logo">
+      <rect width="512" height="512" rx="112" fill="#2E6B3A" />
+      <path d="M136 250h240v34c0 66-54 120-120 120s-120-54-120-120z" fill="#F6F7F2" />
+      <rect x="112" y="232" width="288" height="30" rx="15" fill="#F6F7F2" />
+      <path d="M256 196c-6-40 14-74 52-86-2 40-22 70-52 86z" fill="#CFE5C2" />
+      <path d="M248 200c-26-22-58-24-82-10 22 22 52 24 82 10z" fill="#CFE5C2" />
+    </svg>
+  );
+}

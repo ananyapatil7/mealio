@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { ChartColumn, ChefHat, Leaf, Refrigerator, ShoppingBasket } from 'lucide-react';
-import { ToastProvider, cx } from './components/ui';
+import { ChartColumn, ChefHat, Refrigerator, ShoppingBasket } from 'lucide-react';
+import { Logo, ToastProvider, cx } from './components/ui';
 import { useStore } from './state/store';
 import Kitchen from './screens/Kitchen';
 import Cook from './screens/Cook';
@@ -39,9 +39,7 @@ export default function App() {
         {/* Desktop sidebar */}
         <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-surface px-4 py-8 lg:flex">
           <div className="mb-10 flex items-center gap-2.5 px-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-brand-ink">
-              <Leaf size={20} strokeWidth={2.4} />
-            </span>
+            <Logo className="h-9 w-9 shrink-0" />
             <span className="text-2xl font-extrabold tracking-tight">Mealio</span>
           </div>
           <nav className="flex flex-col gap-1" aria-label="Main">
