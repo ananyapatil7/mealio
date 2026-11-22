@@ -1,7 +1,7 @@
 import type { InventoryItem, MealType, Quantity, Recipe, Staple } from './types';
 import { available, isStaple } from './inventory';
 import { formatQty, scaleQty } from './units';
-import { displayName, nameMatches, tokenize } from './names';
+import { catalogEntry, displayName, isKnown, nameMatches, normalizeName, singularize } from './names';
 import { caloriesFor } from './calories';
 
 export interface IngredientCheck {
@@ -88,17 +88,49 @@ export function parseQuery(query: string): ParsedQuery {
 }
 
 const MEAT_WORDS = new Set(['meat', 'non veg', 'nonveg', 'non-veg']);
+const VEG_WORDS = new Set(['veg', 'vegetarian', 'veggie']);
 
-function recipeMentions(recipe: Recipe, term: string): boolean {
-  const t = term.toLowerCase().trim();
+const words = (text: string) => text.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+
+/** Every word a recipe can be found by: its name, cuisine, meal types, and each ingredient's name, label and aliases. */
+const SEARCH_WORDS = new Map<string, string[]>();
+function recipeWords(recipe: Recipe): string[] {
+  let w = SEARCH_WORDS.get(recipe.id);
+  if (!w) {
+    const set = new Set<string>([...words(recipe.name), ...words(recipe.cuisine), ...recipe.mealTypes, ...recipe.tags.flatMap(words)]);
+    for (const ing of recipe.ingredients) {
+      for (const word of words(ing.name)) set.add(word);
+      // Label and alias words, minus ones that name a different ingredient
+      // ("egg" in the noodles alias "egg noodles", "cheese" in paneer's "cottage cheese").
+      for (const word of [...words(displayName(ing.name)), ...(catalogEntry(ing.name)?.aliases ?? []).flatMap(words)]) {
+        const other = normalizeName(word);
+        if (!isKnown(other) || other === ing.name) set.add(word);
+      }
+    }
+    w = [...set];
+    SEARCH_WORDS.set(recipe.id, w);
+  }
+  return w;
+}
+
+/** A typed word matches when it starts a recipe word ("pas" -> pasta), ignoring plurals ("eggs" -> egg). */
+function wordMatches(typed: string, candidates: string[]): boolean {
+  const sing = singularize(typed);
+  return candidates.some((c) => c.startsWith(typed) || c.startsWith(sing) || singularize(c) === sing);
+}
+
+/**
+ * Does a search phrase describe this recipe? Every word must match something (so "tomato pasta" means both).
+ * Words shorter than `minLen` are ignored (used for "no …", so "no p" doesn't hide half the list mid-typing).
+ */
+function recipeMentions(recipe: Recipe, phrase: string, minLen = 1): boolean {
+  const t = phrase.toLowerCase().trim();
   if (MEAT_WORDS.has(t)) return recipe.tags.includes('non-veg');
-  if (t === 'veg' || t === 'vegetarian') return recipe.tags.includes('veg');
-  if (t === 'quick') return recipe.tags.includes('quick');
-  if (t === recipe.cuisine.toLowerCase()) return true;
-  const nameTokens = tokenize(recipe.name);
-  const termTokens = tokenize(t);
-  if (termTokens.length && termTokens.every((tok) => nameTokens.includes(tok))) return true;
-  return recipe.ingredients.some((ing) => nameMatches(t, ing.name));
+  if (VEG_WORDS.has(t)) return recipe.tags.includes('veg');
+  const typed = words(t).filter((w) => w.length >= minLen);
+  if (!typed.length) return minLen === 1; // nothing to match yet
+  const candidates = recipeWords(recipe);
+  return typed.every((w) => wordMatches(w, candidates) || recipe.ingredients.some((ing) => nameMatches(w, ing.name)));
 }
 
 export function passesFilters(recipe: Recipe, f: RecipeFilters): boolean {
@@ -108,7 +140,7 @@ export function passesFilters(recipe: Recipe, f: RecipeFilters): boolean {
   if (f.maxCalories !== undefined && recipe.caloriesPerServing > f.maxCalories) return false;
   if (f.query) {
     const q = parseQuery(f.query);
-    if (q.exclude.some((t) => recipeMentions(recipe, t))) return false;
+    if (q.exclude.some((t) => recipeMentions(recipe, t, 3))) return false;
     if (!q.include.every((t) => recipeMentions(recipe, t))) return false;
   }
   return true;

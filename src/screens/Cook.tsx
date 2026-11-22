@@ -13,7 +13,7 @@ const KCAL_OPTIONS = [undefined, 300, 400, 500, 700] as const;
 export default function Cook() {
   const { state, dispatch } = useStore();
   const go = useNav();
-  const [mealType, setMealType] = useState<MealType>(() => mealForNow());
+  const [mealType, setMealType] = useState<MealType | 'all'>(() => mealForNow());
   const [vegOnly, setVegOnly] = useState(false);
   const [quick, setQuick] = useState(false);
   const [maxKcal, setMaxKcal] = useState<number | undefined>(undefined);
@@ -24,7 +24,7 @@ export default function Cook() {
   const matches = useMemo(
     () =>
       rankRecipes(RECIPES, state.inventory, state.staples, {
-        mealType,
+        mealType: mealType === 'all' ? undefined : mealType,
         vegOnly,
         maxMinutes: quick ? 20 : undefined,
         maxCalories: maxKcal,
@@ -33,6 +33,18 @@ export default function Cook() {
       }),
     [state.inventory, state.staples, mealType, vegOnly, quick, maxKcal, servings, query],
   );
+  // When searching inside one meal, say how many more matches the other meals have.
+  const elsewhere = useMemo(() => {
+    if (mealType === 'all' || !query.trim()) return 0;
+    const everywhere = rankRecipes(RECIPES, state.inventory, state.staples, {
+      vegOnly,
+      maxMinutes: quick ? 20 : undefined,
+      maxCalories: maxKcal,
+      servings,
+      query,
+    }).length;
+    return everywhere - matches.length;
+  }, [mealType, query, matches.length, state.inventory, state.staples, vegOnly, quick, maxKcal, servings]);
   const ready = matches.filter((m) => m.missingCount === 0).length;
   const close = matches.filter((m) => m.missingCount > 0 && m.missingCount <= 2).length;
   const plannedIds = new Set(state.planned.map((p) => p.recipeId));
@@ -55,18 +67,27 @@ export default function Cook() {
 
       <div className="sticky top-0 z-20 bg-bg/95 px-4 pt-1 pb-3 backdrop-blur lg:static lg:px-0 lg:pb-6">
         <div className="lg:flex lg:items-center lg:gap-4">
-          <div className="grid grid-cols-4 gap-1 rounded-full bg-surface-2 p-1 lg:w-[460px] lg:shrink-0" role="tablist" aria-label="Meal type">
-            {MEAL_TYPES.map((t) => (
-              <button
-                key={t}
-                role="tab"
-                aria-selected={mealType === t}
-                onClick={() => setMealType(t)}
-                className={cx('min-h-11 rounded-full text-sm font-semibold capitalize transition', mealType === t ? 'bg-brand text-brand-ink shadow-sm' : 'text-ink-2 hover:text-ink')}
-              >
-                {t}
-              </button>
-            ))}
+          <div
+            className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] lg:mx-0 lg:shrink-0 lg:rounded-full lg:bg-surface-2 lg:p-1 lg:px-1"
+            role="tablist"
+            aria-label="Meal type"
+          >
+            <div className="flex min-w-full gap-1 rounded-full bg-surface-2 p-1 lg:min-w-0 lg:bg-transparent lg:p-0">
+              {(['all', ...MEAL_TYPES] as const).map((t) => (
+                <button
+                  key={t}
+                  role="tab"
+                  aria-selected={mealType === t}
+                  onClick={() => setMealType(t)}
+                  className={cx(
+                    'min-h-11 flex-1 shrink-0 rounded-full px-2.5 text-[13px] font-semibold capitalize transition sm:px-3.5 sm:text-sm lg:flex-none lg:px-5',
+                    mealType === t ? 'bg-brand text-brand-ink shadow-sm' : 'text-ink-2 hover:text-ink',
+                  )}
+                >
+                  {t === 'all' ? 'All' : t}
+                </button>
+              ))}
+            </div>
           </div>
           <label className="mt-3 flex min-h-12 items-center gap-2 rounded-full border border-line bg-surface px-4 lg:mt-0 lg:flex-1">
             <Search size={18} className="shrink-0 text-ink-3" />
@@ -113,8 +134,21 @@ export default function Cook() {
           </div>
         )}
 
+        {elsewhere > 0 && matches.length > 0 && (
+          <button
+            onClick={() => setMealType('all')}
+            className="mb-3 w-full rounded-2xl bg-lime px-4 py-3 text-left text-sm font-semibold text-brand"
+          >
+            {elsewhere} more match{elsewhere === 1 ? '' : 'es'} in other meals · Show all recipes →
+          </button>
+        )}
         {matches.length === 0 ? (
-          <EmptyState emoji="🍳" title="No recipes match" body="Try a different meal type or loosen the filters.">
+          <EmptyState
+            emoji="🍳"
+            title={query.trim() ? `No ${mealType === 'all' ? '' : `${mealType} `}recipes match "${query.trim()}"` : 'No recipes match'}
+            body={elsewhere > 0 ? `Found ${elsewhere} in other meals.` : 'Try a different word, meal type or fewer filters.'}
+          >
+            {elsewhere > 0 && <Button onClick={() => setMealType('all')}>Show all recipes</Button>}
             {filtersOn && (
               <Button
                 variant="secondary"

@@ -37,7 +37,7 @@ Both configs send `sw.js` with `no-cache` (so app updates reach users) and hashe
 | Tab | Purpose | Main action |
 |---|---|---|
 | **Kitchen** | Inventory (running-low items first) and staples as have / don't-have chips | **Add groceries**: type casually or paste a receipt, then check and save |
-| **Cook** | Meal type, servings, Veg / ≤20 min / kcal filters, free text ("no paneer"). Ranked recipe cards | Open a recipe, then **I cooked this** or **Plan this week** |
+| **Cook** | All / Breakfast / Lunch / Dinner / Snack tabs, servings, Veg / ≤20 min / kcal filters, live search. Ranked recipe cards | Open a recipe, then **I cooked this** or **Plan this week** |
 | **Shop** | Generated list (low stock + planned shortfalls + missing staples) plus manual items | Tick items off, then **Add ticked to kitchen** |
 | **Track** | Today's calories, meals, a 7-day bar chart (tap a day) | — |
 
@@ -85,6 +85,7 @@ To extend it later (OCR, sync, expiry), add a new source that produces `Incoming
 - **No quantity given** ("milk"): the usual pack size is used (milk 1 l) and the confirm screen marks it "Guessed amount: check it".
 - **Receipts**: prices (`45.00`, `₹35`, `@ 56.00`), totals, tax, dates and shop-name headers are ignored. A small number after a weight is read as the line quantity (`BUTTER 100G 2` → 200 g).
 - **Names**: lower-case, singular, aliases (aloo → potato, dahi → curd, capsicum/bell pepper). Brand and variety words are dropped ("basmati rice" → rice), but different products are never collapsed ("tomato ketchup" stays ketchup). Unknown items are kept as typed. The parser never adds items that weren't in the text.
+- **Recipe search** updates as you type and matches the start of words ("pas" → pasta), recipe names, ingredients and their other names (aloo, dahi), cuisine and meal type. Every word must match, so "tomato pasta" narrows to one dish. "no paneer" / "without onion or garlic" excludes, once at least 3 letters are typed. If the current meal tab has fewer matches than All, the app offers to show the rest.
 - **Staples** are tracked as have / don't have. Recipes need them to be "have". Cooking doesn't deduct them. A missing staple goes on the shopping list.
 - **Low stock**: an item goes on the list when it is below its threshold (set per item, "Remind me when below") or has run out. The suggested amount tops it up to **2× the threshold**, or one usual pack if no threshold is set.
 - **Planned meals**: needs are scaled to the planned servings, summed across all planned meals, then stock is subtracted once. Cooking a planned recipe removes it from the plan.

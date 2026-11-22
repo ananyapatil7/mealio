@@ -80,4 +80,40 @@ describe('recipe ranking', () => {
     expect(m.missing.map(missingLabel)).toEqual(['Curd / yogurt: 150 g more', 'Paneer 400 g', 'Cooking oil']);
     for (const label of m.missing.map(missingLabel)) expect(label).toMatch(/^[\w /:.½¼¾⅓⅔-]+$/);
   });
+
+  it('search works while typing: partial words match (live search)', () => {
+    const names = (query: string, mealType?: 'lunch') => rankRecipes(RECIPES, [], [], { servings: 1, query, mealType }).map((m) => m.recipe.name);
+    for (const partial of ['pas', 'past', 'pasta']) expect(names(partial)).toContain('Quick Tomato Pasta');
+    expect(names('pane')).toEqual(expect.arrayContaining(['Palak Paneer', 'Paneer Bhurji']));
+    expect(names('chick')).toEqual(expect.arrayContaining(['Chickpea Salad', 'Simple Chicken Curry']));
+    expect(names('omelet')).toEqual(['Masala Omelette']);
+    expect(names('p').length).toBeGreaterThan(10); // one letter narrows, never empties the list
+  });
+
+  it('every word must match, so multi-word searches narrow down', () => {
+    const names = (query: string) => rankRecipes(RECIPES, [], [], { servings: 1, query }).map((m) => m.recipe.name);
+    expect(names('tomato pasta')).toEqual(['Quick Tomato Pasta']);
+    expect(names('egg rice')).toEqual(['Egg Fried Rice']);
+    expect(names('Masala Chai')).toEqual(['Masala Chai']);
+  });
+
+  it('finds recipes by ingredient aliases and labels, any case', () => {
+    const names = (query: string) => rankRecipes(RECIPES, [], [], { servings: 1, query }).map((m) => m.recipe.name);
+    expect(names('ALOO')).toEqual(expect.arrayContaining(['Jeera Aloo', 'Aloo Gobi', 'Aloo Paratha']));
+    expect(names('yogurt')).toContain('Curd Rice'); // curd's label is "Curd / yogurt"
+    expect(names('breakfast').length).toBeGreaterThan(5);
+  });
+
+  it('"All" (no meal type) searches every recipe', () => {
+    expect(rankRecipes(RECIPES, [], [], { servings: 1 })).toHaveLength(RECIPES.length);
+    expect(rankRecipes(RECIPES, [], [], { servings: 1, query: 'chai', mealType: 'lunch' })).toHaveLength(0);
+    expect(rankRecipes(RECIPES, [], [], { servings: 1, query: 'chai' })).toHaveLength(1);
+  });
+
+  it('exclusions ignore half-typed words and match prefixes once 3+ letters', () => {
+    const count = (query: string) => rankRecipes(RECIPES, [], [], { servings: 1, query }).length;
+    expect(count('no p')).toBe(RECIPES.length);
+    const noPan = rankRecipes(RECIPES, [], [], { servings: 1, query: 'no pan' }).map((m) => m.recipe.name);
+    expect(noPan).not.toContain('Palak Paneer');
+  });
 });
