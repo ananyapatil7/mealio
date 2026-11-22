@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+
+/* Warm, calm palette. Tokens switch for dark mode; components only use the tokens. */
+:root {
+  --bg: #fbf6ef;
+  --surface: #ffffff;
+  --surface-2: #f4ece1;
+  --ink: #2b2118;
+  --ink-2: #6f6052;
+  --ink-3: #9a8b7d;
+  --line: #eadfd2;
+  --brand: #d4572a;
+  --brand-ink: #ffffff;
+  --brand-soft: #fbe5d9;
+  --good: #2f7d4f;
+  --good-soft: #e1f1e6;
+  --warn: #a86400;
+  --warn-soft: #fbedd3;
+  --bad: #b8371f;
+  --bad-soft: #fbe2dc;
+  --chart: #d4572a;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1612;
+    --surface: #27201a;
+    --surface-2: #322920;
+    --ink: #f6eee6;
+    --ink-2: #c4b4a4;
+    --ink-3: #8e7f71;
+    --line: #3c3229;
+    --brand: #ec7a4b;
+    --brand-ink: #1c1612;
+    --brand-soft: #4a2b1d;
+    --good: #6fcf94;
+    --good-soft: #1f3a2a;
+    --warn: #f0b75a;
+    --warn-soft: #3d2f17;
+    --bad: #f28b74;
+    --bad-soft: #43231c;
+    --chart: #ec7a4b;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --font-sans: ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+body {
+  font-family: var(--font-sans);
+}
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+input,
+textarea,
+select {
+  font-size: 16px; /* prevents iOS zoom on focus */
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-sheet { animation: sheet-up 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.animate-fade { animation: fade-in 0.18s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-sheet, .animate-fade { animation: none; }
+}
