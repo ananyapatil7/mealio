@@ -12,7 +12,7 @@ export interface CatalogEntry {
   label: string;
   /** Default unit when the user gives a bare number or no quantity. */
   unit: Unit;
-  /** Average weight of one piece, enables pcs <-> g conversion. */
+  /** Average weight of one piece. Items with unit 'pcs' and a piece weight are always stored as a count. */
   gramsPerPiece?: number;
   /** Grams per millilitre, enables g <-> ml conversion for liquids. */
   density?: number;
@@ -27,7 +27,7 @@ export const CATALOG: CatalogEntry[] = [
   // ---- Countable produce & basics
   { key: 'egg', label: 'Eggs', unit: 'pcs', gramsPerPiece: 50, pack: 6, aliases: ['anda', 'ande'] },
   { key: 'onion', label: 'Onions', unit: 'pcs', gramsPerPiece: 150, pack: 4, aliases: ['pyaz', 'pyaaz', 'kanda', 'red onion', 'white onion'] },
-  { key: 'tomato', label: 'Tomatoes', unit: 'pcs', gramsPerPiece: 100, pack: 4, aliases: ['tamatar', 'cherry tomato'] },
+  { key: 'tomato', label: 'Tomatoes', unit: 'pcs', gramsPerPiece: 125, pack: 4, aliases: ['tamatar', 'cherry tomato'] },
   { key: 'potato', label: 'Potatoes', unit: 'pcs', gramsPerPiece: 170, pack: 4, aliases: ['aloo', 'alu', 'batata'] },
   { key: 'green chilli', label: 'Green chillies', unit: 'pcs', gramsPerPiece: 5, pack: 10, aliases: ['chilli', 'chili', 'green chili', 'hari mirch', 'mirchi'] },
   { key: 'garlic', label: 'Garlic (cloves)', unit: 'pcs', gramsPerPiece: 5, pack: 20, aliases: ['garlic clove', 'lehsun', 'lasun'] },
@@ -36,7 +36,7 @@ export const CATALOG: CatalogEntry[] = [
   { key: 'apple', label: 'Apples', unit: 'pcs', gramsPerPiece: 180, pack: 4, aliases: ['seb'] },
   { key: 'carrot', label: 'Carrots', unit: 'pcs', gramsPerPiece: 80, pack: 4, aliases: ['gajar'] },
   { key: 'capsicum', label: 'Capsicum', unit: 'pcs', gramsPerPiece: 150, pack: 2, aliases: ['bell pepper', 'shimla mirch', 'green pepper', 'red pepper'] },
-  { key: 'cucumber', label: 'Cucumbers', unit: 'pcs', gramsPerPiece: 200, pack: 2, aliases: ['kheera', 'khira'] },
+  { key: 'cucumber', label: 'Cucumbers', unit: 'pcs', gramsPerPiece: 250, pack: 2, aliases: ['kheera', 'khira'] },
   { key: 'bread', label: 'Bread (slices)', unit: 'pcs', gramsPerPiece: 30, pack: 20, aliases: ['bread slice', 'white bread', 'brown bread', 'pav', 'toast'] },
   { key: 'tortilla', label: 'Tortillas / wraps', unit: 'pcs', gramsPerPiece: 40, pack: 6, aliases: ['wrap', 'roti wrap'] },
 

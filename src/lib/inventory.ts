@@ -1,5 +1,5 @@
 import type { InventoryItem, Quantity, Staple, Unit } from './types';
-import { convert, round } from './units';
+import { convert, isCountable, round, toCount } from './units';
 import { catalogEntry, normalizeName } from './names';
 
 export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -28,31 +28,32 @@ export function findItems(inventory: InventoryItem[], name: string): InventoryIt
   return inventory.filter((i) => i.name === name);
 }
 
+/** Legacy or edited entries of countable items (e.g. onions saved as 1000 g) become a count. */
+export function normalizeItem(item: InventoryItem): InventoryItem {
+  if (item.unit === 'pcs' || !isCountable(item.name)) return item;
+  const qty = toCount(item.name, item).qty;
+  const next: InventoryItem = { ...item, qty, unit: 'pcs' };
+  if (item.lowAt !== undefined) next.lowAt = Math.max(1, toCount(item.name, { qty: item.lowAt, unit: item.unit }).qty);
+  return next;
+}
+
 /**
  * Add items to the inventory, merging with existing entries of the same name.
- * Mixed pcs + g are stored in grams (finer unit); otherwise the existing unit wins.
+ * Countable items (eggs, onions, tomatoes…) are always kept as a whole count;
+ * for everything else the existing entry's unit wins.
  */
 export function addToInventory(inventory: InventoryItem[], incoming: IncomingItem[], now = Date.now()): InventoryItem[] {
-  const next = inventory.map((i) => ({ ...i }));
+  const next = inventory.map((i) => normalizeItem({ ...i }));
   for (const raw of incoming) {
     const name = normalizeName(raw.name);
     if (!name || !(raw.qty > 0)) continue;
-    const existing = next.find((i) => i.name === name && convert(raw, i.unit, name) !== null);
+    const q = toCount(name, { qty: raw.qty, unit: raw.unit });
+    const existing = next.find((i) => i.name === name && convert(q, i.unit, name) !== null);
     if (!existing) {
-      next.push({ id: uid(), name, qty: round(raw.qty, raw.unit), unit: raw.unit, updatedAt: now });
+      next.push({ id: uid(), name, qty: round(q.qty, q.unit), unit: q.unit, updatedAt: now });
       continue;
     }
-    let unit: Unit = existing.unit;
-    if (existing.unit !== raw.unit && (existing.unit === 'pcs' || raw.unit === 'pcs') && convert(raw, 'g', name) !== null) {
-      unit = 'g';
-    }
-    const current = convert(existing, unit, name) ?? existing.qty;
-    const add = convert(raw, unit, name) ?? 0;
-    if (unit !== existing.unit && existing.lowAt !== undefined) {
-      existing.lowAt = round(convert({ qty: existing.lowAt, unit: existing.unit }, unit, name) ?? existing.lowAt, unit);
-    }
-    existing.qty = round(Math.max(0, current) + add, unit);
-    existing.unit = unit;
+    existing.qty = round(Math.max(0, existing.qty) + (convert(q, existing.unit, name) ?? 0), existing.unit);
     existing.updatedAt = now;
   }
   return next;

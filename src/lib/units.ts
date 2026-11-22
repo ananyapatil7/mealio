@@ -70,6 +70,25 @@ function toGrams(q: Quantity, gpp?: number, density?: number): number | null {
   return null;
 }
 
+/** Countable ingredients: their natural unit is pieces and we know roughly what one weighs. */
+export function isCountable(name: string): boolean {
+  const c = catalogEntry(name);
+  return !!c && c.unit === 'pcs' && !!c.gramsPerPiece;
+}
+
+/**
+ * Express a quantity of a countable ingredient as a whole count:
+ * 500 g tomatoes -> 4 pcs (at ~125 g each). Anything else is returned unchanged.
+ * `from` holds the original amount when a conversion happened, so the UI can say "≈ from 500 g".
+ */
+export function toCount(name: string, q: Quantity): Quantity & { from?: Quantity } {
+  if (q.unit === 'pcs' || !isCountable(name)) return q;
+  const pcs = convert(q, 'pcs', name);
+  if (pcs === null) return q;
+  if (q.qty <= 0) return { qty: 0, unit: 'pcs', from: q };
+  return { qty: Math.max(1, Math.round(pcs)), unit: 'pcs', from: q };
+}
+
 export function canConvert(from: Unit, to: Unit, name: string): boolean {
   return convert({ qty: 1, unit: from }, to, name) !== null;
 }

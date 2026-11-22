@@ -1,6 +1,6 @@
-import type { Unit } from './types';
+import type { Quantity, Unit } from './types';
 import { catalogEntry, normalizeName } from './names';
-import { PACK_WORDS, convert, round, toCanonical, unitWord } from './units';
+import { PACK_WORDS, convert, round, toCanonical, toCount, unitWord } from './units';
 
 export interface ParsedItem {
   /** Canonical name. */
@@ -15,6 +15,8 @@ export interface ParsedItem {
   known: boolean;
   /** Staples are saved as "have", not as a quantity. */
   staple: boolean;
+  /** Set when a weight was turned into a count ("half kg tomatoes" -> 4): the amount as typed. */
+  estimatedFrom?: Quantity;
 }
 
 const NUMBER_WORDS: Record<string, number> = {
@@ -64,7 +66,16 @@ export function parseGroceryText(text: string, staples: string[] = []): ParsedIt
       items.push(parsed);
     }
   }
-  return mergeParsed(items);
+  // Merge first (so 500 g + 500 g tomatoes = 1 kg), then turn weights of countable things into counts.
+  return mergeParsed(items).map(asCount);
+}
+
+/** Countable items are kept as a whole count: "half kg tomatoes" -> 4 tomatoes (estimated). */
+export function asCount(item: ParsedItem): ParsedItem {
+  if (item.staple) return item;
+  const c = toCount(item.name, item);
+  if (!c.from) return item;
+  return { ...item, qty: c.qty, unit: 'pcs', estimatedFrom: c.from };
 }
 
 function parseChunk(chunk: string, receiptLike: boolean, staples: Set<string>): ParsedItem | null {

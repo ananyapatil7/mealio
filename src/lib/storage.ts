@@ -1,5 +1,6 @@
 import type { AppState } from './types';
 import { DEFAULT_STAPLES } from '../data/ingredients';
+import { normalizeItem } from './inventory';
 
 export const STORAGE_KEY = 'mealio:v1';
 
@@ -45,7 +46,8 @@ export function loadState(store: KeyValueStore | null = defaultStore()): AppStat
       ...base,
       ...parsed,
       version: 1,
-      inventory: Array.isArray(parsed.inventory) ? parsed.inventory : [],
+      // Older saves may hold countable items by weight; show them as a count.
+      inventory: Array.isArray(parsed.inventory) ? parsed.inventory.map(normalizeItem) : [],
       staples: Array.isArray(parsed.staples) ? parsed.staples : base.staples,
       mealLogs: Array.isArray(parsed.mealLogs) ? parsed.mealLogs : [],
       planned: Array.isArray(parsed.planned) ? parsed.planned : [],

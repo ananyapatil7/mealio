@@ -1,5 +1,5 @@
 import type { AppState, InventoryItem, ManualShoppingItem, Unit } from '../lib/types';
-import { addToInventory, uid, type IncomingItem } from '../lib/inventory';
+import { addToInventory, normalizeItem, uid, type IncomingItem } from '../lib/inventory';
 import { applyDeductions, makeLog, type DeductionLine } from '../lib/cooking';
 import { normalizeName } from '../lib/names';
 import { RECIPES_BY_ID } from '../data/recipes';
@@ -52,7 +52,7 @@ export function reducer(state: AppState, action: Action): AppState {
           if (action.patch.name !== undefined) next.name = normalizeName(action.patch.name) || i.name;
           next.qty = Math.max(0, Number(next.qty) || 0);
           if (next.lowAt !== undefined && !(next.lowAt > 0)) delete next.lowAt;
-          return next;
+          return normalizeItem(next);
         }),
       };
     case 'deleteItem':

@@ -4,7 +4,7 @@ import { Button, FoodTile, Sheet, cx, useToast } from '../components/ui';
 import { emojiFor } from '../data/ingredients';
 import { parseGroceryText, type ParsedItem } from '../lib/parser';
 import { catalogEntry, displayName, isKnown, normalizeName } from '../lib/names';
-import { formatQty } from '../lib/units';
+import { formatQty, isCountable, toCount } from '../lib/units';
 import type { Unit } from '../lib/types';
 import { useStore } from '../state/store';
 
@@ -55,7 +55,10 @@ export default function AddGroceries({ open, onClose, mode = 'text' }: { open: b
           const entry = catalogEntry(next.name);
           if (entry && !r.name && r.unit === 'pcs') next.unit = entry.unit;
         }
-        if (patch.qty !== undefined || patch.unit !== undefined) next.assumed = false;
+        if (patch.qty !== undefined || patch.unit !== undefined) {
+          next.assumed = false;
+          next.estimatedFrom = undefined;
+        }
         return next;
       }),
     );
@@ -160,11 +163,22 @@ export default function AddGroceries({ open, onClose, mode = 'text' }: { open: b
                       )}
                     />
                     <UnitPicker value={r.unit} onChange={(unit) => update(r.rowId, { unit })} />
-                    <span className="ml-auto text-xs text-ink-3">{r.unit !== 'pcs' && r.qty >= 1000 ? formatQty(r.qty, r.unit) : ''}</span>
+                    <span className="ml-auto text-right text-xs text-ink-3">
+                      {r.unit !== 'pcs' && r.name && isCountable(r.name) && r.qty > 0
+                        ? `saves as ≈ ${toCount(r.name, r).qty} pcs`
+                        : r.unit !== 'pcs' && r.qty >= 1000
+                          ? formatQty(r.qty, r.unit)
+                          : ''}
+                    </span>
                   </div>
                 )}
                 <div className="flex flex-wrap gap-1.5 px-2 pt-1.5 empty:hidden">
                   {r.assumed && !r.staple && <span className="rounded-full bg-warn-soft px-2 py-0.5 text-xs font-medium text-warn">Guessed amount: check it</span>}
+                  {r.estimatedFrom && !r.staple && (
+                    <span className="rounded-full bg-lime px-2 py-0.5 text-xs font-medium text-brand">
+                      ≈ from {formatQty(r.estimatedFrom.qty, r.estimatedFrom.unit)}, check the count
+                    </span>
+                  )}
                   {r.name && !r.known && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-2">New item</span>}
                   {r.source && r.source.toLowerCase() !== r.text.toLowerCase() && <span className="truncate text-xs text-ink-3">from "{r.source}"</span>}
                 </div>

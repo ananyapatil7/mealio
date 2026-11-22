@@ -30,6 +30,18 @@ describe('persistence', () => {
     expect(reloaded.shoppingManual).toHaveLength(1);
   });
 
+  it('migrates saved countable items stored by weight to a count on load', () => {
+    const store = memoryStore();
+    store.setItem(STORAGE_KEY, JSON.stringify({ inventory: [{ id: '1', name: 'tomato', qty: 500, unit: 'g', updatedAt: 0 }] }));
+    expect(loadState(store).inventory[0]).toMatchObject({ name: 'tomato', qty: 4, unit: 'pcs' });
+  });
+
+  it('editing a countable item in grams stores it as a count', () => {
+    let state = reducer(loadState(memoryStore()), { type: 'addItems', items: [{ name: 'potato', qty: 3, unit: 'pcs' }] });
+    state = reducer(state, { type: 'updateItem', id: state.inventory[0].id, patch: { qty: 850, unit: 'g' } });
+    expect(state.inventory[0]).toMatchObject({ qty: 5, unit: 'pcs' });
+  });
+
   it('falls back to an empty state on corrupt data', () => {
     const store = memoryStore();
     store.setItem(STORAGE_KEY, '{not json');

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyDeductions, planCook } from '../cooking';
-import { addToInventory, deductFromInventory, stockLevel } from '../inventory';
+import { addToInventory, deductFromInventory, normalizeItem, stockLevel } from '../inventory';
 import type { InventoryItem, Recipe, Staple } from '../types';
 
 const onionRecipe: Recipe = {
@@ -73,10 +73,18 @@ describe('inventory merging', () => {
     expect(b).toHaveLength(1);
     expect(b[0]).toMatchObject({ name: 'onion', qty: 5, unit: 'pcs' });
   });
-  it('merges pcs and g into grams', () => {
+  it('keeps countable items as a count when weight is added', () => {
     const a = addToInventory([], [{ name: 'onion', qty: 2, unit: 'pcs' }], 1);
-    const b = addToInventory(a, [{ name: 'onion', qty: 1000, unit: 'g' }], 2);
-    expect(b).toEqual([expect.objectContaining({ name: 'onion', qty: 1300, unit: 'g' })]);
+    const b = addToInventory(a, [{ name: 'onion', qty: 1000, unit: 'g' }], 2); // ~7 onions
+    expect(b).toEqual([expect.objectContaining({ name: 'onion', qty: 9, unit: 'pcs' })]);
+    const c = addToInventory([], [{ name: 'tomato', qty: 500, unit: 'g' }], 1);
+    expect(c).toEqual([expect.objectContaining({ name: 'tomato', qty: 4, unit: 'pcs' })]);
+  });
+  it('turns older weight-based entries of countable items into a count, threshold included', () => {
+    const legacy: InventoryItem = { id: 'x', name: 'onion', qty: 1000, unit: 'g', lowAt: 300, updatedAt: 0 };
+    expect(normalizeItem(legacy)).toMatchObject({ qty: 7, unit: 'pcs', lowAt: 2 });
+    const paneer: InventoryItem = { id: 'y', name: 'paneer', qty: 200, unit: 'g', updatedAt: 0 };
+    expect(normalizeItem(paneer)).toBe(paneer);
   });
   it('clamps manual deductions at zero', () => {
     const a = inv([['egg', 2, 'pcs']]);

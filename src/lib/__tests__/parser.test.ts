@@ -4,12 +4,33 @@ import { parseGroceryText } from '../parser';
 const simple = (text: string) => parseGroceryText(text).map(({ name, qty, unit }) => ({ name, qty, unit }));
 
 describe('parseGroceryText', () => {
-  it('done-criterion 1: "bought 6 eggs, 1kg onions, half kg tomatoes"', () => {
+  it('done-criterion 1 (updated): countable items bought by weight are saved as a count', () => {
+    // onion ~150 g each, tomato ~125 g each
     expect(simple('bought 6 eggs, 1kg onions, half kg tomatoes')).toEqual([
       { name: 'egg', qty: 6, unit: 'pcs' },
-      { name: 'onion', qty: 1000, unit: 'g' },
-      { name: 'tomato', qty: 500, unit: 'g' },
+      { name: 'onion', qty: 7, unit: 'pcs' },
+      { name: 'tomato', qty: 4, unit: 'pcs' },
     ]);
+  });
+
+  it('marks weight-to-count conversions as estimates and keeps the typed amount', () => {
+    const [tomato] = parseGroceryText('half kg tomatoes');
+    expect(tomato).toMatchObject({ qty: 4, unit: 'pcs', estimatedFrom: { qty: 500, unit: 'g' } });
+    const [eggs] = parseGroceryText('6 eggs');
+    expect(eggs.estimatedFrom).toBeUndefined();
+  });
+
+  it('keeps non-countable items in g / ml', () => {
+    expect(simple('500g paneer, 1 l milk, 1 kg rice, 200 g spinach')).toEqual([
+      { name: 'paneer', qty: 500, unit: 'g' },
+      { name: 'milk', qty: 1000, unit: 'ml' },
+      { name: 'rice', qty: 1000, unit: 'g' },
+      { name: 'spinach', qty: 200, unit: 'g' },
+    ]);
+  });
+
+  it('always gives at least one piece for small weights', () => {
+    expect(simple('50 g tomato')).toEqual([{ name: 'tomato', qty: 1, unit: 'pcs' }]);
   });
 
   it('gives a bare item a default quantity, flagged as assumed', () => {
@@ -27,7 +48,7 @@ describe('parseGroceryText', () => {
     expect(simple('a dozen eggs')).toEqual([{ name: 'egg', qty: 12, unit: 'pcs' }]);
     expect(simple('half dozen bananas')).toEqual([{ name: 'banana', qty: 6, unit: 'pcs' }]);
     expect(simple('2 l milk')).toEqual([{ name: 'milk', qty: 2000, unit: 'ml' }]);
-    expect(simple('1.5kg potatoes')).toEqual([{ name: 'potato', qty: 1500, unit: 'g' }]);
+    expect(simple('1.5kg potatoes')).toEqual([{ name: 'potato', qty: 9, unit: 'pcs' }]); // ~170 g each
     expect(simple('1/2 kg paneer')).toEqual([{ name: 'paneer', qty: 500, unit: 'g' }]);
     expect(simple('250 gm butter')).toEqual([{ name: 'butter', qty: 250, unit: 'g' }]);
     expect(simple('500ml curd')).toEqual([{ name: 'curd', qty: 500, unit: 'ml' }]);
@@ -70,8 +91,8 @@ GST                          0.00
 TOTAL                      378.00
 Thank you for shopping!`;
     expect(simple(receipt)).toEqual([
-      { name: 'tomato', qty: 500, unit: 'g' },
-      { name: 'onion', qty: 1000, unit: 'g' },
+      { name: 'tomato', qty: 4, unit: 'pcs' },
+      { name: 'onion', qty: 7, unit: 'pcs' },
       { name: 'egg', qty: 12, unit: 'pcs' },
       { name: 'butter', qty: 200, unit: 'g' },
       { name: 'milk', qty: 2000, unit: 'ml' },
@@ -82,13 +103,15 @@ Thank you for shopping!`;
   it('treats prices with currency as prices', () => {
     expect(simple('6 eggs Rs 42, 1 kg onions ₹35')).toEqual([
       { name: 'egg', qty: 6, unit: 'pcs' },
-      { name: 'onion', qty: 1000, unit: 'g' },
+      { name: 'onion', qty: 7, unit: 'pcs' },
     ]);
   });
 
   it('merges duplicate lines and sums quantities', () => {
     expect(simple('2 onions, 3 onions')).toEqual([{ name: 'onion', qty: 5, unit: 'pcs' }]);
-    expect(simple('500g tomatoes, half kg tomatoes')).toEqual([{ name: 'tomato', qty: 1000, unit: 'g' }]);
+    // Weights are summed before converting, so rounding doesn't compound: 1 kg / 125 g = 8
+    expect(simple('500g tomatoes, half kg tomatoes')).toEqual([{ name: 'tomato', qty: 8, unit: 'pcs' }]);
+    expect(simple('2 tomatoes, 250 g tomatoes')).toEqual([{ name: 'tomato', qty: 4, unit: 'pcs' }]);
   });
 
   it('flags staples and keeps unknown items as typed (never invents)', () => {

@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Check, ChefHat, Clock, Ellipsis, Flame, Minus, Plus, Search, ShoppingBasket, ShoppingCart, Sparkles, Trash2, TriangleAlert, Users } from 'lucide-react';
 import { Button, Chip, EmptyState, FoodTile, IconButton, ScreenHeader, SectionTitle, Sheet, cx, useToast } from '../components/ui';
 import { useStore } from '../state/store';
-import { displayName } from '../lib/names';
-import { formatQty, round } from '../lib/units';
+import { catalogEntry, displayName } from '../lib/names';
+import { formatQty, isCountable, round } from '../lib/units';
 import { isLow, stockLevel } from '../lib/inventory';
 import { mealForNow, rankRecipes, type RecipeMatch } from '../lib/ranking';
 import type { InventoryItem, Unit } from '../lib/types';
@@ -398,6 +398,7 @@ function ItemEditor({ item, onClose }: { item: InventoryItem | null; onClose: ()
   }, [item]);
 
   if (!item) return null;
+  const countable = isCountable(item.name);
   const step = unit === 'pcs' ? 1 : 50;
   const save = () => {
     dispatch({ type: 'updateItem', id: item.id, patch: { qty, unit, lowAt: lowAt === '' ? undefined : Number(lowAt) } });
@@ -449,7 +450,11 @@ function ItemEditor({ item, onClose }: { item: InventoryItem | null; onClose: ()
         </button>
       </div>
       <div className="mt-3 flex items-center justify-between">
-        <UnitPicker value={unit} onChange={setUnit} />
+        {countable ? (
+          <span className="text-sm text-ink-2">Counted in pieces · about {catalogEntry(item.name)?.gramsPerPiece} g each</span>
+        ) : (
+          <UnitPicker value={unit} onChange={setUnit} />
+        )}
         <span className="text-ink-2">{formatStock(qty, unit)}</span>
       </div>
 
