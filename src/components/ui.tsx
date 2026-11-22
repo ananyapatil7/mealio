@@ -144,8 +144,8 @@ export function Sheet({
             <X size={22} />
           </IconButton>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">{children}</div>
-        {footer && <div className="pb-safe border-t border-line bg-bg px-5 pt-3 pb-3 lg:rounded-b-[28px]">{footer}</div>}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6">{children}</div>
+        {footer && <div className="border-t border-line bg-bg px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:rounded-b-[28px]">{footer}</div>}
       </div>
     </div>
   );
